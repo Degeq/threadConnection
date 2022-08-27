@@ -1,24 +1,47 @@
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.*;
+
 public class Main {
 
-    public static void main(String[] args) throws InterruptedException {
-        ThreadGroup threadGroup = new ThreadGroup("main group");
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
 
-        Thread myThread1 = new MyThread(threadGroup, "Поток 1");
-        Thread myThread2 = new MyThread(threadGroup, "Поток 2");
-        Thread myThread3 = new MyThread(threadGroup, "Поток 3");
-        Thread myThread4 = new MyThread(threadGroup, "Поток 4");
+        Integer i = 0;
+        final Collection<Callable<Integer>> taskList = new ArrayList<>();
+        final Callable<Integer> myTask1 = new MyCallable(i);
+        final Callable<Integer> myTask2 = new MyCallable(i);
 
-        myThread1.start();
-        myThread2.start();
-        myThread3.start();
-        myThread4.start();
+        taskList.add(myTask1);
+        taskList.add(myTask2);
 
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException ine) {
-
+        final ExecutorService threadPool = Executors.newFixedThreadPool(4, new MyThreadFactory());
+        List<Future<Integer>> result = threadPool.invokeAll(taskList);
+        for (Future<Integer> answer : result) {
+            i = i + answer.get();
         }
+        System.out.println("За время работы потока было выведно: " + i + " сообщений");
+        threadPool.shutdown();
 
-        threadGroup.interrupt();
+
+//        ThreadGroup threadGroup = new ThreadGroup("main group");
+//
+//        Thread myThread1 = new MyThread(threadGroup, "Поток 1");
+//        Thread myThread2 = new MyThread(threadGroup, "Поток 2");
+//        Thread myThread3 = new MyThread(threadGroup, "Поток 3");
+//        Thread myThread4 = new MyThread(threadGroup, "Поток 4");
+//
+//        myThread1.start();
+//        myThread2.start();
+//        myThread3.start();
+//        myThread4.start();
+//
+//        try {
+//            Thread.sleep(10000);
+//        } catch (InterruptedException ine) {
+//
+//        }
+//
+//        threadGroup.interrupt();
     }
 }
